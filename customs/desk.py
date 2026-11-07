@@ -621,6 +621,8 @@ class Desk:
 
     def _matching_order(self, pending: Pending, region: Region) -> StandingOrder | None:
         now = self.now()
+        if region.office_open(now):
+            return None  # standing orders cover the hours its people are away; at their desk, they sign
         action = "release" if pending.to == "release" else "handoff"
         if action == "release" and not pending.verified:
             return None

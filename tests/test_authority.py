@@ -148,3 +148,11 @@ def test_the_demo_clock_is_off_unless_configured(tmp_path):
     d = Desk(cfg, State(), Ledger(cfg.data_dir / "l.jsonl"), cases, FakeRepo(),
              border_for=lambda p: Border(cases.registries(), p), now=lambda: NOON_UTC)
     assert "Time travel is off" in "\n".join(p.text for p in d.handle(msg(INTAKE, "x", "@customs-clerk time +8h"), INTAKE_VIEW))
+
+
+def test_a_standing_order_waits_while_its_owner_is_at_their_desk(desk):
+    ticket_in_berlin(desk)  # Berlin 11:00, office open
+    say(desk, EU, "berlin-lead", "clerk standing-order release TKT-0001 until 09:00")
+    text = say(desk, EU, "eu-verifier", handoff_block(to="release", commit="fff9999"))
+    assert "needs your signature" in text and desk.repo.merged == []
+    assert desk.state.orders["SO-1"].status == "active"  # kept for tonight
