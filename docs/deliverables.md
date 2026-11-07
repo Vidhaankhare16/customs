@@ -6,13 +6,20 @@ Copy each answer into the form. Items marked **YOU** need your account or a clic
 
 | Item | Status |
 |---|---|
-| Public repository | `https://github.com/Vidhaankhare16/customs` (created and pushed by Claude once the final video is in) |
-| Demo video (under 3 min) | Rendered: `C:\Users\VICTUS 15\Desktop\demo-video-kit\videos\customs\out\video.mp4`. **YOU:** upload to YouTube as *Unlisted*, using the title and description below |
+| Public repository | Done: <https://github.com/Vidhaankhare16/customs> (public, pushed) |
+| Demo video (under 3 min) | Done: **2:54**, 1920×1080, AI narration with burned-in captions, one live take of the real system. File: `C:\Users\VICTUS 15\Desktop\demo-video-kit\videos\customs\out\video.mp4`. **YOU:** upload it to YouTube as *Unlisted* with the title and description below, then paste the link into the form and into `README.md` line 6 |
 | README explaining Switch use | `README.md` in the repo (agents, channels, how to run) |
 | Blog post (optional, Best Blog) | Draft ready: `docs/BLOG.md`. **YOU:** publish it on dev.to or Hashnode and paste the link |
 | #HowISwitch post (optional) | Text below. **YOU:** post it on LinkedIn or X with the video |
 | Wispr usage card | Not applicable (not built with Wispr Flow) |
 | Pull requests (Track 03) | Not applicable |
+
+### Your remaining steps, in order (about 20 minutes)
+1. Upload `video.mp4` to YouTube as **Unlisted** (title, description and chapters are below).
+2. Put the YouTube link into `README.md` line 6, replacing `_link to be added_`. Commit and push, or ask Claude to.
+3. Publish `docs/BLOG.md` on dev.to or Hashnode, adding the video link near the top.
+4. Post the #HowISwitch text below on LinkedIn or X, with the video attached.
+5. Fill in the form with Parts 1–3 below, plus the video and blog links. Deadline: **Nov 7, 11:59 PM IST**.
 
 ---
 
@@ -68,9 +75,19 @@ Copy each answer into the form. Items marked **YOU** need your account or a clic
   Real run: Claude Code agents in Bengaluru and Berlin, Switch rooms in Mattermost, a deterministic clerk agent.
   Code: https://github.com/Vidhaankhare16/customs
 
-  Chapters are in the video (the kit embeds them); also listed in out/video.chapters.txt
+  0:00 The stakes
+  0:15 The problem
+  0:36 The idea
+  0:51 One real ticket
+  1:05 The wall
+  1:16 The crossing
+  1:31 Real data
+  1:51 Night falls
+  2:02 Three in the morning
+  2:20 Morning
+  2:36 Why Switch
   ```
-  Paste the chapter list from `out\video.chapters.txt` under the description.
+  The chapter lines make YouTube show chapters automatically (the list starts at 0:00, as YouTube requires).
 
 ---
 
