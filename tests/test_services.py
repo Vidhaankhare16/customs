@@ -14,7 +14,7 @@ VERIFY = ("{python}", str(ROOT / "tools" / "verify_vault.py"), "--repo", "{check
 
 
 def git(cwd, *args):
-    return subprocess.run(["git", *args], cwd=cwd, check=True, capture_output=True, text=True).stdout.strip()
+    return subprocess.run(["git", "-c", "core.fsmonitor=false", *args], cwd=cwd, check=True, capture_output=True, text=True).stdout.strip()
 
 
 def edit(path: Path, old: str, new: str):

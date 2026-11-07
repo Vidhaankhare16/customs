@@ -72,7 +72,7 @@ class GitOrigin:
         self.main = main
 
     def _git(self, *args: str, check: bool = True) -> subprocess.CompletedProcess:
-        return subprocess.run(["git", f"--git-dir={self.origin}", *args], capture_output=True, text=True, check=check)
+        return subprocess.run(["git", "-c", "core.fsmonitor=false", f"--git-dir={self.origin}", *args], capture_output=True, text=True, check=check)
 
     def commit_exists(self, commit: str) -> bool:
         return self._git("cat-file", "-e", f"{commit}^{{commit}}", check=False).returncode == 0

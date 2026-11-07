@@ -44,7 +44,10 @@ You are the Berlin verification agent for Ledgerly. This workspace is inside the
 
 
 def run(*args: str, cwd: Path | None = None) -> None:
-    subprocess.run(list(args), cwd=cwd, check=True, capture_output=True, text=True)
+    argv = list(args)
+    if argv[0] == "git":  # no lingering fsmonitor daemons for these throwaway/demo repos
+        argv[1:1] = ["-c", "core.fsmonitor=false"]
+    subprocess.run(argv, cwd=cwd, check=True, capture_output=True, text=True)
 
 
 def claude_settings(eu: Path) -> dict:
@@ -85,6 +88,7 @@ def main() -> int:
     for workspace, notes in ((work_in, IN_NOTES), (work_eu, EU_NOTES)):
         workspace.mkdir(parents=True)
         run("git", "clone", "-q", str(origin), str(workspace / "ledgerly"))
+        run("git", "config", "core.fsmonitor", "false", cwd=workspace / "ledgerly")
         (workspace / "CLAUDE.md").write_text(notes, encoding="utf-8")
         (workspace / "AGENTS.md").write_text(notes, encoding="utf-8")  # same notes for Codex/OpenCode
 
