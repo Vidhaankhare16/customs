@@ -1,19 +1,44 @@
 # Customs
 
-**Follow-the-sun engineering on [Switch](https://github.com/sandbox-quantum/switch): work crosses borders, customer data doesn't.**
-
-AI agents don't sleep. But the access they act with, and the people allowed to sign off their work, belong to
-a region. An EU customer's records may only be handled inside the EU. A Bengaluru engineer, and the agent
-working with that engineer's access, is not allowed to see them, however capable it is.
-
-So the work has to move. Customs moves it through Switch rooms with a border in between. The border is a
-small deterministic agent, the **clerk**, that decides in code what may cross, who must sign, and what ships.
+**Let AI work cross your organisation's borders, while the data and the authority stay where they belong.**
+Built on [Switch](https://github.com/sandbox-quantum/switch).
 
 > Flip the Switch hackathon, Track 01 (Best Business Workflow). Demo video: _link to be added_.
+> The full narrative, act by act, is in [docs/STORY.md](docs/STORY.md).
+
+## The problem
+
+AI agents are teammates now. But every real organisation has borders that agents either ignore or stop at:
+
+- **Data:** EU customer data stays in the EU, Indian payment data stays in India, and client A's files never
+  reach client B's team.
+- **Authority:** only certain people may approve certain work.
+- **Time:** the person allowed to say "yes" is asleep.
+
+One agent that does everything would need every permission at once. So teams either over-share access or do
+the work by hand.
+
+## The idea
+
+**Put each team's agents inside its own jurisdiction, and let work (not data) cross between jurisdictions
+through a border enforced in code.**
+
+On Switch, every part of that already exists:
+
+| Concept | Switch primitive |
+|---|---|
+| Jurisdiction | a **room**. Membership is enforced by the server. |
+| Who owns the task right now | an **exclusive role** in that room (one holder at a time) |
+| The border | the **Customs clerk**: a custom agent, the only member of every room. Deterministic, not an AI. |
+| A crossing | a structured handoff, a person's signature on the exact text, and a hash-chained ledger entry |
+| The whole setup | one **template** |
+
+Jurisdictions, routes, approvers and what counts as protected data are configuration. The rest of this page is
+**one example**.
 
 ---
 
-## The story in one ticket
+## The example: one ticket, two jurisdictions
 
 An EU customer, Brauhaus Lindenhof GmbH, writes in. Invoice totals in Ledgerly, our invoicing library, are
 off by a cent against their books, and their auditor wants it fixed before the VAT return. It is 05:00 in
@@ -49,6 +74,14 @@ sequenceDiagram
 The second bug only shows up in the real data. German ERP exports write `1.234,50`, and Ledgerly's importer
 silently drops those rows. Bengaluru could not have found it from a pseudonymised case file. Berlin could not
 have fixed it without the code context. The ticket needs both regions, and the border is what makes that safe.
+
+In five steps, each adding one idea:
+
+1. **A signed crossing.** Bengaluru hands the ticket to Berlin; the Bengaluru lead signs; custody moves.
+2. **The wall.** Asked to look at the real invoices, the Bengaluru agent is refused by Switch itself.
+3. **The border check.** Identifiers are pseudonymised, and a draft containing a person's details is blocked.
+4. **The round trip.** Real data shows 38/40; the ticket goes back, is fixed, and comes back at 40/40.
+5. **A provable release.** The clerk re-verifies, a person signs, exactly that commit merges, and the ledger proves it.
 
 ## What stops working without Switch
 
