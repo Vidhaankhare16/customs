@@ -1,123 +1,110 @@
 # Customs
 
-**Let AI work cross your organisation's borders, while the data and the authority stay where they belong.**
-Built on [Switch](https://github.com/sandbox-quantum/switch).
+**Follow-the-sun AI work on [Switch](https://github.com/sandbox-quantum/switch): it keeps moving while your
+people sleep, and customer data stays in its region.**
 
 > Flip the Switch hackathon, Track 01 (Best Business Workflow). Demo video: _link to be added_.
 > The full narrative, act by act, is in [docs/STORY.md](docs/STORY.md).
 
 ## The problem
 
-AI agents are teammates now. But every real organisation has borders that agents either ignore or stop at:
+Global teams spread across regions, for example Bengaluru and Berlin, 4.5 hours apart. AI agents can work
+around the clock, but two borders stop the work:
 
-- **Data:** EU customer data stays in the EU, Indian payment data stays in India, and client A's files never
-  reach client B's team.
-- **Authority:** only certain people may approve certain work.
-- **Time:** the person allowed to say "yes" is asleep.
+1. **Authority sleeps.** The person who must approve a release, a customer reply or a production change is
+   offline. The agent's work piles up waiting for a "yes", and the time difference costs a day.
+2. **Access is regional.** Data residency rules (GDPR in the EU, RBI localisation in India, client
+   confidentiality everywhere) mean an EU customer's data may only be handled in the EU. A Bengaluru engineer,
+   and an agent working with that engineer's access, is not allowed to see it, however capable it is.
 
-One agent that does everything would need every permission at once. So teams either over-share access or do
-the work by hand.
+Teams fail in one of two directions. They either **give the agent everything** (all access, plus auto-approve
+so nobody has to wake up), or they **keep a human in every loop** and the agent waits all night.
 
 ## The idea
 
-**Put each team's agents inside its own jurisdiction, and let work (not data) cross between jurisdictions
-through a border enforced in code.**
+**Each region's agents live in their own room. Work, not data, crosses between rooms through a border
+enforced in code. Authority crosses time zones as a bounded, expiring delegation, never as a blank cheque.**
 
-On Switch, every part of that already exists:
-
-| Concept | Switch primitive |
+| Concept | On Switch |
 |---|---|
-| Jurisdiction | a **room**. Membership is enforced by the server. |
-| Who owns the task right now | an **exclusive role** in that room (one holder at a time) |
-| The border | the **Customs clerk**: a custom agent, the only member of every room. Deterministic, not an AI. |
-| A crossing | a structured handoff, a person's signature on the exact text, and a hash-chained ledger entry |
+| A region | a **room**. Membership is enforced by the Switch server. |
+| Who owns the task right now | an **exclusive role** in that room: one holder at a time |
+| The border | the **Customs clerk**: a custom Switch agent, the only member of every room. Deterministic, not an AI. |
+| A crossing | a structured handoff, a person's signature on the exact text, a hash-chained ledger entry |
+| Authority while asleep | a **standing order**: "release TKT-0001 only if your own check passes, once, until 09:00" |
 | The whole setup | one **template** |
 
-Jurisdictions, routes, approvers and what counts as protected data are configuration. The rest of this page is
+Regions, routes, approvers, office hours and what counts as protected data are all configuration. Below is
 **one example**.
 
 ---
 
-## The example: one ticket, two jurisdictions
+## The example: an EU customer's bug, fixed overnight
 
-An EU customer, Brauhaus Lindenhof GmbH, writes in. Invoice totals in Ledgerly, our invoicing library, are
-off by a cent against their books, and their auditor wants it fixed before the VAT return. It is 05:00 in
-Berlin and 09:30 in Bengaluru.
+An EU customer, Brauhaus Lindenhof GmbH, writes in. Invoice totals in Ledgerly, our invoicing library, are off
+against their books, and their auditor wants it fixed before the VAT return.
 
-```mermaid
-sequenceDiagram
-  autonumber
-  participant S as Support (intake room)
-  participant C as Clerk (not an AI)
-  participant B as Bengaluru room<br/>investigator agent + lead
-  participant E as Berlin room (EU)<br/>verifier agent + lead + customer vault
-  S->>C: open C-DE-0042 "totals off by a cent"
-  C->>B: case file, pseudonymised ([INV-1], no names, no emails)
-  Note over B: agent asks to see the real invoices:<br/>Switch refuses, it is not a member of the EU room
-  B->>B: failing test, Decimal fix, push branch
-  B->>C: customs-handoff (to: eu)
-  C->>B: passed the border check, lead signs the exact text (digest)
-  C->>E: custody to Berlin, [INV-1] re-identified inside the EU
-  E->>E: reconcile against the real records: 38/40
-  E->>C: customs-handoff (to: in) "importer drops rows with format d.ddd,dd"
-  Note over C: a draft naming the customer contact is BLOCKED at the border
-  C->>B: custody back to Bengaluru, Berlin lead signed, invoice numbers pseudonymised
-  B->>C: parser fixed, handoff to eu
-  C->>E: Bengaluru lead signed
-  E->>E: reconcile: 40/40
-  E->>C: customs-handoff (to: release)
-  C->>C: re-runs the reconciliation itself at that exact commit
-  C->>E: Berlin lead signs the release
-  C->>S: main fast-forwarded to exactly that commit, custody card, ledger intact
-```
+| Act | Berlin time | What happens | Border |
+|---|---|---|---|
+| 1. A signed crossing | 11:00 | Bengaluru fixes the rounding bug and hands it to Berlin. The Bengaluru lead signs the exact text, and custody moves. | authority |
+| 2. The wall | 11:20 | Asked to check the real invoices, the Bengaluru agent is **refused by Switch itself**: it isn't a member of the EU room. | access |
+| 3. The border check | 17:30 | Berlin reconciles against the real records: **38/40**. Its first reply names the customer contact and is **blocked at the border**. The rewrite crosses, pseudonymised. | access |
+| 4. Night falls | 18:05 | Both leads leave **standing orders** before going offline: "hand the next fix to Berlin" and "release TKT-0001 only if your own check passes, until 09:00". | authority |
+| 5. While everyone sleeps | 03:10 | The second fix lands: **40/40**. The clerk re-verifies that exact commit itself, signs under the Berlin lead's standing order, and fast-forwards `main`. | both |
+| 6. Morning, and proof | 09:01 | "Good morning, Berlin. While you were away: TKT-0001 was released." Custody card, then an intact ledger, then a tamper test. | proof |
 
 The second bug only shows up in the real data. German ERP exports write `1.234,50`, and Ledgerly's importer
-silently drops those rows. Bengaluru could not have found it from a pseudonymised case file. Berlin could not
-have fixed it without the code context. The ticket needs both regions, and the border is what makes that safe.
-
-In five steps, each adding one idea:
-
-1. **A signed crossing.** Bengaluru hands the ticket to Berlin; the Bengaluru lead signs; custody moves.
-2. **The wall.** Asked to look at the real invoices, the Bengaluru agent is refused by Switch itself.
-3. **The border check.** Identifiers are pseudonymised, and a draft containing a person's details is blocked.
-4. **The round trip.** Real data shows 38/40; the ticket goes back, is fixed, and comes back at 40/40.
-5. **A provable release.** The clerk re-verifies, a person signs, exactly that commit merges, and the ledger proves it.
+silently drops those rows. Bengaluru could not have found it from a pseudonymised case file, and Berlin could
+not have fixed it without the code context. The ticket needs both regions, and both time zones.
 
 ## What stops working without Switch
 
 | Without Switch | With Switch |
 |---|---|
-| Three agents on different machines and vendors have no shared place to talk | Agents and people share rooms in the chat they already use (Mattermost, Slack, Teams, Discord, Telegram) |
-| "Keep EU data in the EU" is a sentence in a prompt | Room membership is checked by the server: the Bengaluru agent's `read_context` on the EU room is refused |
-| "Who owns this right now?" lives in someone's head | Exclusive room roles (`investigator`, `verifier`): one holder at a time, and the clerk accepts handoffs only from the current holder (read from Switch's role leases) |
-| Approvals are a thumbs-up anyone could fake | The clerk checks the signer is a person (not an agent) and is that region's named approver |
+| Agents on different machines and vendors have no shared place to work | Agents and people share rooms in the chat they already use (Mattermost, Slack, Teams, Discord, Telegram) |
+| "Keep EU data in the EU" is a sentence in a prompt | The Bengaluru agent's `read_context` on the EU room is refused by the server |
+| "Who owns this right now?" lives in someone's head | Exclusive room roles. The clerk accepts handoffs only from the current holder, read from Switch's role leases |
+| Approvals are a thumbs-up anyone could fake | Signers must be people (not agents) and that region's named approvers |
 | Setup is a wiki page | One template deploys the group, three rooms, links, both agents, roles and kickoffs |
 
-## How the border holds
+## How the borders hold
 
-The defences are layered. Each one is enforced in code or by the Switch server, never by asking a model nicely.
+Everything below is enforced in code or by the Switch server, never by asking a model nicely.
 
-1. **Switch membership** (server-enforced). Each regional agent is a member of one room only. Switch refuses
-   reads of rooms an agent is not in. The clerk is the only member of every room.
-2. **Custody** (clerk). A ticket is in exactly one region's custody. Only the holder of that region's
-   exclusive role can hand it on, and only along configured routes.
-3. **The border check** (clerk, deterministic). Text leaving a data-resident region is scanned against the
-   customer registry and patterns for personal data: names, emails, phones, IBANs, VAT IDs, addresses.
-   - If any is found, the handoff is **blocked, not repaired**. The refusal names the field and the kind of
-     data, never the value.
+**Access**
+1. **Switch membership.** Each regional agent is a member of one room only, and Switch refuses reads of other
+   rooms. The clerk is the only member of every room.
+2. **Custody.** A ticket is in exactly one region's custody. Only the holder of that region's exclusive role
+   can hand it on, along configured routes.
+3. **The border check.** Text leaving a data-resident region is scanned against the customer registry and
+   patterns for personal data (names, emails, phones, IBANs, VAT IDs, addresses).
+   - If any is found, the handoff is **blocked, not repaired**. The refusal names the field, never the value.
    - Identifiers (invoice numbers, the customer's name) are **pseudonymised** on the way out (`[INV-3]`) and
-     re-identified only on the way back in. The mapping never leaves the clerk.
-4. **Signatures** (clerk). Every crossing needs a person from the region the work is leaving. Agents can't
-   sign, and neither can people outside the approver list. Signatures are pinned to the digest of the exact
-   text that will cross, and are single-use.
-5. **Release** (clerk + git). Before anyone is asked to sign, the clerk reconciles the requested commit
-   against the vault itself, in a fresh export of that commit. After the Berlin lead signs, it fast-forwards
-   `main` to exactly that commit, or refuses if `main` moved.
-6. **Ledger** (clerk). Every decision, including every refusal, is appended to a hash-chained ledger.
-   Editing, reordering or deleting an entry breaks the chain, and `@customs-clerk verify-ledger` says where.
+     re-identified only inside the resident region.
+
+**Authority**
+4. **Signatures.** Every crossing needs a person from the region the work is leaving, and every release needs
+   one from the resident region. Agents can't sign. Signatures are pinned to the digest of the exact text, and
+   single-use.
+5. **Standing orders.** Before going off duty, an approver can delegate one signature.
+   - It is scoped to a ticket and an action, expires (24 h at most), and is used once.
+   - It applies only when its condition holds. For a release, the condition is that the clerk's own
+     reconciliation of that exact commit passes.
+   - It never overrides a block, and it's revocable.
+   - It's ledgered as "signed by berlin-lead (standing order SO-2)".
+6. **Office hours.** Requests to a closed office say when its people are back, and agents are told to keep
+   working rather than wait. Closing notes suggest a standing order. Morning briefings list what happened
+   overnight and what waits for a signature.
+
+**Release and proof**
+7. **Independent verification.** Before any person or standing order may sign a release, the clerk reconciles
+   the requested commit against the vault itself, in a fresh export. Then it fast-forwards `main` to exactly
+   that commit, or refuses if `main` moved.
+8. **Ledger.** Every decision, every refusal and every use of delegated authority is hash-chained.
+   `@customs-clerk verify-ledger` names the first tampered entry.
 
 The clerk is also durable. Decisions are saved before they're announced, through an outbox, so a crash never
-duplicates a handoff or loses an approval request.
+duplicates a handoff or loses a signature request.
 
 ## Run it
 
@@ -130,31 +117,33 @@ git clone <this repo> && cd customs
 # 1. Regional workspaces: shared origin, Bengaluru clone, Berlin clone + customer vault
 python scripts/setup_regions.py            # creates ~/customs-regions
 
-# 2. Register the clerk (registration key: Switch Gateway -> API Keys)
-python -m customs register --base-url http://localhost:<bridge port> --registration-key <key>
+# 2. Register the clerk with your Switch server
+python -m customs register --base-url http://localhost:<agent bridge port> --registration-key <key>
 
 # 3. In Switch Console: Templates -> import switch/customs.template.yaml -> run it
-#    (pick the Berlin lead's chat account; the defaults point at ~/customs-regions)
 
 # 4. Put your two approvers' chat usernames into config/customs.toml, then:
 python -m customs check                    # rooms, members, who holds which role
 python -m customs run                      # the clerk
 ```
 
-Then, in `customs-intake`:
+**People, in the chat:**
 
-```
-@customs-clerk open C-DE-0042 invoice totals off by a cent
-```
-
-Other commands: `@customs-clerk status`, `@customs-clerk ledger TKT-0001`, `@customs-clerk verify-ledger`.
-Leads sign with `approve H-3` or `reject H-3 <reason>`.
+| Command | Where | What |
+|---|---|---|
+| `@customs-clerk open C-DE-0042 <problem>` | intake | open a ticket |
+| `approve H-3` / `reject H-3 <reason>` | the region the work leaves | sign a crossing |
+| `@customs-clerk standing-order release TKT-0001 until 09:00` | your region's room | delegate one signature while you're away |
+| `@customs-clerk revoke SO-2`, `@customs-clerk orders` | anywhere | manage standing orders |
+| `@customs-clerk status`, `ledger TKT-0001`, `verify-ledger` | anywhere | see state and proof |
+| `@customs-clerk time eu 18:05` | anywhere | **demo only**: move the desk clock (ledgered) |
 
 ### Tests
 
 ```bash
 pip install pytest
-python -m pytest -q          # 37 tests: border, custody, signatures, ledger tampering, real-git release, crash recovery
+python -m pytest -q          # 47 tests: border, custody, signatures, standing orders, briefings, ledger tampering,
+                             # real-git release, crash recovery
 cd ledgerly && python -m pytest -q   # the demo app's own (passing, but incomplete) tests
 ```
 
@@ -178,13 +167,15 @@ cd ledgerly && python -m pytest -q   # the demo app's own (passing, but incomple
 - **Regions are simulated on one machine** in the demo. The Switch boundary (room membership) is real. The
   filesystem boundary between `~/customs-regions/in` and `eu` is a guard rail (Claude Code deny rules), not
   isolation. In production the workspaces are different machines (Switch remote hosts).
+- **The night is simulated too.** In demo mode a person can move the desk clock. Every move is a ledger entry,
+  and the setting is off by default outside the demo config.
 - **Detection is deterministic, not omniscient.** The clerk catches what the customer registry knows plus
-  common patterns. A person's name it has never seen, written in free text, would get through. That's why
-  every crossing also needs a human signature on the exact text.
-- **The clerk polls** the agent protocol every 2 seconds instead of holding an event stream open. That keeps
-  it simple and restart-safe.
-- **Business amounts are treated as shareable** once identifiers are pseudonymised. Personal data is not.
-  That's a policy choice, made explicit in `customs/redact.py`.
+  common patterns. An unknown name in free text would get through, which is why every crossing also needs a
+  signature on the exact text.
+- **Standing orders are only as good as their condition.** That's why a release can only be delegated when the
+  clerk verifies it independently.
+- **The clerk polls** the agent protocol every 2 seconds instead of holding an event stream open: simpler and
+  restart-safe.
 - All customer data in `fixtures/` is synthetic.
 
 ## Built with AI assistance

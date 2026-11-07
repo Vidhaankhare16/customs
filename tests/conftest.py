@@ -20,8 +20,9 @@ VAULT = ROOT / "fixtures" / "eu-vault"
 NOON_UTC = datetime(2026, 11, 6, 4, 0, tzinfo=timezone.utc)  # 09:30 in Bengaluru, 05:00 in Berlin
 
 
-def write_config(tmp_path: Path, **release) -> Path:
+def write_config(tmp_path: Path, time_travel: bool = False, **release) -> Path:
     text = (ROOT / "config" / "customs.toml").read_text(encoding="utf-8")
+    text = text.replace("time_travel = true", f"time_travel = {'true' if time_travel else 'false'}")
     text = text.replace('data_dir = "../.customs"', f'data_dir = "{(tmp_path / "data").as_posix()}"')
     text = text.replace('path = "~/customs-regions/eu/vault"', f'path = "{VAULT.as_posix()}"')
     text = text.replace('origin_repo = "~/customs-regions/origin/ledgerly.git"',

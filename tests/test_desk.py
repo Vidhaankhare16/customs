@@ -174,5 +174,5 @@ def test_status_and_help(desk):
     to_eu(desk)
     status = text(desk.handle(msg(INTAKE, "anyone", "@customs-clerk status"), INTAKE_VIEW))
     assert "TKT-0001" in status and "custody **Berlin**" in status
-    assert "Commands" in text(desk.handle(msg(INTAKE, "anyone", "@customs-clerk hello"), INTAKE_VIEW))
+    assert "standing-order" in text(desk.handle(msg(INTAKE, "anyone", "@customs-clerk hello"), INTAKE_VIEW))
     assert desk.handle(msg(INTAKE, "anyone", "unrelated chatter"), INTAKE_VIEW) == []

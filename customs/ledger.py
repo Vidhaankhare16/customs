@@ -45,11 +45,14 @@ class Ledger:
             return 0, GENESIS
         return entries[-1]["seq"], entries[-1]["hash"]
 
-    def append(self, event: str, ticket: str | None, actor: str, region: str | None = None, **details) -> dict:
+    def append(self, event: str, ticket: str | None, actor: str, region: str | None = None,
+               at: datetime | None = None, **details) -> dict:
+        """Append an entry. `at` is the desk's clock (it differs from wall time only in demo time-travel,
+        and every clock move is itself a ledger entry)."""
         seq, prev = self.head()
         entry = {
             "seq": seq + 1,
-            "ts": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+            "ts": (at or datetime.now(timezone.utc)).astimezone(timezone.utc).isoformat(timespec="seconds"),
             "event": event,
             "ticket": ticket,
             "actor": actor,

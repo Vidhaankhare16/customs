@@ -37,6 +37,16 @@ allowed = [["in", "eu"], ["eu", "in"]]
 # The EU customer vault. Only the clerk (the border) and the EU workspace can read it.
 path = "~/customs-regions/eu/vault"
 
+[authority]
+# People sleep; agents don't. An approver may leave a standing order before going off duty: a bounded,
+# expiring, single-use delegation of their signature that the clerk applies only when its conditions hold.
+max_standing_order_hours = 24
+
+[demo]
+# Lets a person move the desk clock (`@customs-clerk time eu 18:05`) so a night passes in seconds on video.
+# Every move is a ledger entry. Turn off outside demos.
+time_travel = true
+
 [release]
 origin_repo = "~/customs-regions/origin/ledgerly.git"
 independent_verification = true

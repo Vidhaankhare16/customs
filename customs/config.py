@@ -38,6 +38,16 @@ class Region:
         start, end = self.office_hours
         return start <= self.local_time(now).hour < end
 
+    def next_open(self, now: datetime) -> datetime:
+        """The next moment the office opens (now, if it is open)."""
+        if self.office_open(now):
+            return now
+        local = self.local_time(now)
+        opening = local.replace(hour=self.office_hours[0], minute=0, second=0, microsecond=0)
+        if opening <= local:
+            opening += timedelta(days=1)
+        return opening
+
 
 @dataclass(frozen=True)
 class Config:
@@ -54,6 +64,8 @@ class Config:
     poll_seconds: float = 2.0
     independent_verification: bool = True
     verify_command: tuple[str, ...] = ()
+    time_travel: bool = False  # demo only: people may move the desk clock (every move is ledgered)
+    max_standing_order_hours: int = 24
     extra: dict = field(default_factory=dict)
 
     def region_for_room(self, room: str) -> Region | None:
@@ -110,6 +122,8 @@ def load(path: str | Path) -> Config:
             poll_seconds=float(raw["clerk"].get("poll_seconds", 2)),
             independent_verification=bool(raw.get("release", {}).get("independent_verification", True)),
             verify_command=tuple(raw.get("release", {}).get("verify_command", [])),
+            time_travel=bool(raw.get("demo", {}).get("time_travel", False)),
+            max_standing_order_hours=int(raw.get("authority", {}).get("max_standing_order_hours", 24)),
             extra=raw,
         )
     except KeyError as exc:

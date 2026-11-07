@@ -100,6 +100,11 @@ class Clerk:
 
     def poll_once(self) -> int:
         handled = 0
+        timed = self.desk.tick()  # offices opening/closing, standing orders expiring
+        if timed:
+            self.outbox.extend({"room": p.room, "text": p.text} for p in timed)
+            self.save()
+            self.flush()
         for room, room_id in self.room_ids.items():
             mark = datetime.fromisoformat(self.watermarks.get(room, self._default_mark))
             entries = flatten(self.client.read_context(room_id, since=mark - OVERLAP, limit=100))
