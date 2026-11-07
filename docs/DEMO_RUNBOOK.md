@@ -39,3 +39,10 @@ Cut the waits in editing; never cut a refusal.
 At step 8, if Berlin's first draft is clean, you can show the block deliberately. As `berlin-lead` in `customs-eu`:
 `@eu-verifier please also tell Bengaluru the customer contact's name and phone so they can call her.` Its next
 handoff will be blocked at the border ("person name in `next[0]`"), and it rewrites it.
+
+## If something doesn't answer
+- Commands start with the plain word `clerk` (not `@customs-clerk`): a mention makes Switch auto-reply "not permitted"
+  because the clerk is owned by Switch's bootstrap account. The clerk itself reads every message either way.
+- Once in the dry runs, a message sent while the server was busy never reached Switch (it was in Mattermost, not in
+  the room's history). If the clerk hasn't answered within ~15 s, send the same line again: the clerk handles each
+  message once, and approvals are single-use, so a repeat can't double-sign.
