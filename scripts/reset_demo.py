@@ -23,6 +23,19 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[1]
 
 
+def rmtree(path: Path) -> None:
+    """Delete a tree, including git's read-only object files (Windows refuses those otherwise)."""
+    import os
+    import stat
+
+    def unlock(func, target, _exc):
+        os.chmod(target, stat.S_IWRITE)
+        func(target)
+
+    if path.exists():
+        shutil.rmtree(path, onexc=unlock)
+
+
 def git(*args: str, cwd: Path | None = None) -> None:
     subprocess.run(["git", "-c", "core.fsmonitor=false", *args], cwd=cwd, check=True, capture_output=True, text=True)
 
@@ -38,23 +51,23 @@ def main() -> int:
 
     origin = root / "origin" / "ledgerly.git"
     seed = root / "origin" / "seed"
-    shutil.rmtree(origin, ignore_errors=True)
-    shutil.rmtree(seed, ignore_errors=True)
+    rmtree(origin)
+    rmtree(seed)
     shutil.copytree(REPO / "ledgerly", seed, ignore=shutil.ignore_patterns("__pycache__", ".pytest_cache", "*.pyc"))
     git("init", "-q", "-b", "main", cwd=seed)
     git("add", ".", cwd=seed)
     git("-c", "user.name=Ledgerly", "-c", "user.email=dev@ledgerly.example", "commit", "-qm", "Ledgerly 0.3.0", cwd=seed)
     git("clone", "-q", "--bare", str(seed), str(origin))
-    shutil.rmtree(seed, ignore_errors=True)
+    rmtree(seed)
 
     for region in ("in", "eu"):
         workspace = root / region
-        shutil.rmtree(workspace / "ledgerly", ignore_errors=True)
+        rmtree(workspace / "ledgerly")
         git("clone", "-q", str(origin), str(workspace / "ledgerly"))
         git("config", "core.fsmonitor", "false", cwd=workspace / "ledgerly")
         for stray in workspace.glob("report*.json"):
             stray.unlink()
-    shutil.rmtree(root / "eu" / "vault", ignore_errors=True)
+    rmtree(root / "eu" / "vault")
     shutil.copytree(REPO / "fixtures" / "eu-vault", root / "eu" / "vault")
     shutil.copy2(REPO / "tools" / "verify_vault.py", root / "eu" / "tools" / "verify_vault.py")
 
