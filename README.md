@@ -3,8 +3,12 @@
 **Follow-the-sun AI work on [Switch](https://github.com/sandbox-quantum/switch): it keeps moving while your
 people sleep, and customer data stays in its region.**
 
-> Flip the Switch hackathon, Track 01 (Best Business Workflow). Demo video: _link to be added_.
-> The full narrative, act by act, is in [docs/STORY.md](docs/STORY.md).
+> Flip the Switch hackathon, Track 01 (Best Business Workflow).
+> **Demo video (2:54): <https://youtu.be/oU3Dtn7tzgg>**. One live take in a real Switch + Mattermost workspace.
+> The full narrative, act by act, is in [docs/STORY.md](docs/STORY.md). Blog post for first-time Switch users:
+> [docs/BLOG.md](docs/BLOG.md).
+
+![Custody card from the recorded run: four crossings, each signed by a person or their standing order; personal data that left the EU: none](docs/img/custody-card.png)
 
 ## The problem
 
@@ -44,14 +48,22 @@ Regions, routes, approvers, office hours and what counts as protected data are a
 An EU customer, Brauhaus Lindenhof GmbH, writes in. Invoice totals in Ledgerly, our invoicing library, are off
 against their books, and their auditor wants it fixed before the VAT return.
 
+This is exactly what the demo video shows, recorded in one live run:
+
 | Act | Berlin time | What happens | Border |
 |---|---|---|---|
-| 1. A signed crossing | 11:00 | Bengaluru fixes the rounding bug and hands it to Berlin. The Bengaluru lead signs the exact text, and custody moves. | authority |
-| 2. The wall | 11:20 | Asked to check the real invoices, the Bengaluru agent is **refused by Switch itself**: it isn't a member of the EU room. | access |
-| 3. The border check | 17:30 | Berlin reconciles against the real records: **38/40**. Its first reply names the customer contact and is **blocked at the border**. The rewrite crosses, pseudonymised. | access |
-| 4. Night falls | 18:05 | Both leads leave **standing orders** before going offline: "hand the next fix to Berlin" and "release TKT-0001 only if your own check passes, until 09:00". | authority |
-| 5. While everyone sleeps | 03:10 | The second fix lands: **40/40**. The clerk re-verifies that exact commit itself, signs under the Berlin lead's standing order, and fast-forwards `main`. | both |
-| 6. Morning, and proof | 09:01 | "Good morning, Berlin. While you were away: TKT-0001 was released." Custody card, then an intact ledger, then a tamper test. | proof |
+| 1. A masked case file | 11:01 | Support opens the ticket. The clerk hands Bengaluru a case file with every name, phone number and invoice number already masked. | access |
+| 2. The wall | 11:02 | Asked to look at the real invoices, the Bengaluru agent is **refused by Switch itself** (`403: Agent is not a member of this room`). | access |
+| 3. A signed crossing | 11:03 | Bengaluru fixes the rounding bug and hands it to Berlin. The Bengaluru lead signs the exact text, custody moves, and the invoice numbers turn back into real ones only inside Berlin. | authority |
+| 4. Real data | 11:04 | Berlin reconciles against the real records: **38/40**. It sends back the format that breaks the importer, never the values, and the clerk masks the invoice numbers on the way out. | access |
+| 5. Night falls | 18:05 | Both leads leave **standing orders** before going offline: "hand the next fix to Berlin" and "release TKT-0001 only if your own check passes, until 09:00". | authority |
+| 6. While everyone sleeps | 03:00 | The second fix lands: **40/40**. The clerk re-verifies that exact commit itself, signs under the Berlin lead's standing order, and fast-forwards `main`. | both |
+| 7. Morning, and proof | 09:01 | "Good morning, Berlin. While you were away: TKT-0001 was released." Custody card, then an intact ledger, then a tamper test. | proof |
+
+Had any reply named the customer's contact, the clerk would have **blocked it at the border** and said where,
+without repeating the value. In the recorded run the agents' replies were clean, so the custody card shows 0
+refusals. The block is covered by the tests, and [docs/DEMO_RUNBOOK.md](docs/DEMO_RUNBOOK.md) shows how to
+trigger it live.
 
 The second bug only shows up in the real data. German ERP exports write `1.234,50`, and Ledgerly's importer
 silently drops those rows. Bengaluru could not have found it from a pseudonymised case file, and Berlin could
@@ -112,7 +124,7 @@ duplicates a handoff or loses a signature request.
 Codex, OpenCode, Antigravity or Cursor). Switch bundles Mattermost, so you don't need a company chat workspace.
 
 ```bash
-git clone <this repo> && cd customs
+git clone https://github.com/Vidhaankhare16/customs && cd customs
 
 # 1. Regional workspaces: shared origin, Bengaluru clone, Berlin clone + customer vault
 python scripts/setup_regions.py            # creates ~/customs-regions
@@ -121,6 +133,8 @@ python scripts/setup_regions.py            # creates ~/customs-regions
 python -m customs register --base-url http://localhost:<agent bridge port> --registration-key <key>
 
 # 3. In Switch Console: Templates -> import switch/customs.template.yaml -> run it
+#    (If the template form can't create agents on your machine, create in-investigator and eu-verifier under
+#    Your Agents -> New agent, using switch/agents/*.md as instructions, then run switch/customs-rooms.template.yaml.)
 
 # 4. Put your two approvers' chat usernames into config/customs.toml, then:
 python -m customs check                    # rooms, members, who holds which role
@@ -142,8 +156,8 @@ python -m customs run                      # the clerk
 
 ```bash
 pip install pytest
-python -m pytest -q          # 47 tests: border, custody, signatures, standing orders, briefings, ledger tampering,
-                             # real-git release, crash recovery
+python -m pytest -q          # 51 tests, offline, about 20 s: border, custody, signatures, standing orders,
+                             # briefings, ledger tampering, real-git release, crash recovery
 cd ledgerly && python -m pytest -q   # the demo app's own (passing, but incomplete) tests
 ```
 
@@ -176,6 +190,8 @@ cd ledgerly && python -m pytest -q   # the demo app's own (passing, but incomple
   clerk verifies it independently.
 - **The clerk polls** the agent protocol every 2 seconds instead of holding an event stream open: simpler and
   restart-safe.
+- **The demo's two people are one person.** In the video, "Bengaluru Lead" and "Berlin Lead" are two chat
+  accounts played by the author. The agents' and the clerk's messages are live and unedited. Waiting time is cut.
 - All customer data in `fixtures/` is synthetic.
 
 ## Built with AI assistance

@@ -9,7 +9,7 @@ the block's top right. Items marked **YOU** need your account or a click.
 | Item | Status |
 |---|---|
 | Public repository | Done: <https://github.com/Vidhaankhare16/customs> (public, pushed) |
-| Demo video (under 3 min) | Done: **2:54**, 1920×1080, AI narration with burned-in captions, one live take of the real system. File: `C:\Users\VICTUS 15\Desktop\demo-video-kit\videos\customs\out\video.mp4`. **YOU:** upload it to YouTube as *Unlisted* with the title and description below, then paste the link into the form and into `README.md` line 6 |
+| Demo video (under 3 min) | Done: **2:54**, 1920×1080, AI narration with burned-in captions, one live take of the real system. File: `C:\Users\VICTUS 15\Desktop\demo-video-kit\videos\customs\out\video.mp4`. Uploaded: <https://youtu.be/oU3Dtn7tzgg>, linked from the README and the blog |
 | README explaining Switch use | `README.md` in the repo (agents, channels, how to run) |
 | Blog post (optional, Best Blog) | Draft ready: `docs/BLOG.md`. **YOU:** publish it on dev.to or Hashnode and paste the link |
 | #HowISwitch post (optional) | Text below. **YOU:** post it on LinkedIn or X with the video |
@@ -17,9 +17,9 @@ the block's top right. Items marked **YOU** need your account or a click.
 | Pull requests (Track 03) | Not applicable |
 
 ### Your remaining steps, in order (about 20 minutes)
-1. Upload `video.mp4` to YouTube as **Unlisted** (title, description and chapters are below).
-2. Put the YouTube link into `README.md` line 6, replacing `_link to be added_`. Commit and push, or ask Claude to.
-3. Publish `docs/BLOG.md` on dev.to or Hashnode, adding the video link near the top.
+1. ~~Upload the video to YouTube~~ (done).
+2. ~~Link it from the README~~ (done).
+3. Publish `docs/BLOG.md` on dev.to (the video embed is already in it).
 4. Post the #HowISwitch text below on LinkedIn or X, with the video attached.
 5. Fill in the form with Parts 1–3 below, plus the video and blog links. Deadline: **Nov 7, 11:59 PM IST**.
 
@@ -59,7 +59,10 @@ In the demo, a real Claude Code agent in Bengaluru fixes an EU customer's invoic
 https://github.com/Vidhaankhare16/customs
 ```
 
-**Demo video:** your YouTube unlisted link (**YOU**, after uploading).
+**Demo video**
+```text
+https://youtu.be/oU3Dtn7tzgg
+```
 
 **Live demo or deployment:** leave blank. It runs on your own Switch server, and the README has a one-template setup.
 

@@ -1,5 +1,8 @@
 # Customs: demo video script
 
+> Planning script. The final narration (AI voice, 2:54) was produced with demo-video-kit, recording Mattermost in the
+> browser; the beats are the same.
+
 **Length:** about 3:00 (≈ 450 spoken words at a calm pace).
 **Shape:** stakes, then two bad options, then one idea, then one real run with four "wow" beats (the wall, the
 border, 3 AM, the morning), then why Switch, then the tagline.

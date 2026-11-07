@@ -1,5 +1,9 @@
 # The Customs story: from the general idea to the full demo
 
+> **Note on the recorded video:** it follows this story with two differences. The agents' replies were clean, so no
+> border block appears (it's covered by the tests and can be triggered live, see [DEMO_RUNBOOK.md](DEMO_RUNBOOK.md)),
+> and the release happened at 03:00.
+
 This is the narrative spine for the README, the demo video and the blog. It starts with the general problem,
 then adds one idea per act. Each act's demo beat stands on its own.
 
