@@ -93,6 +93,19 @@ def test_outbox_survives_a_crash_between_deciding_and_posting(setup, tmp_path):
     assert len(switch.bodies("customs-in")) == 1
 
 
+def test_duplicate_room_names_are_refused_not_guessed(tmp_path):
+    cfg = config_mod.load(write_config(tmp_path))
+    switch = FakeSwitch()
+    original = switch.list_rooms
+    switch.list_rooms = lambda: original() + [{"name": "customs-eu", "room_id": "r-eu-copy"}]
+    with pytest.raises(SystemExit, match="more than one room is named customs-eu"):
+        Clerk(cfg, switch).resolve_rooms()
+    switch.list_rooms = lambda: original() + [{"name": "customs-eu", "room_id": "r-eu-copy", "archived": True}]
+    clerk = Clerk(cfg, switch)
+    clerk.resolve_rooms()
+    assert clerk.room_ids["customs-eu"] == "r-eu"
+
+
 def test_missing_membership_is_a_clear_error(tmp_path):
     cfg = config_mod.load(write_config(tmp_path))
     switch = FakeSwitch()

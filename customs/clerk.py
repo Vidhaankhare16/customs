@@ -72,7 +72,13 @@ class Clerk:
 
     # ----------------------------------------------------------------------------------------- setup
     def resolve_rooms(self) -> None:
-        rooms = {r["name"]: r.get("room_id") or r.get("id") for r in self.client.list_rooms()}
+        listed = [(r["name"], r.get("room_id") or r.get("id")) for r in self.client.list_rooms() if not r.get("archived")]
+        rooms = dict(listed)
+        doubled = sorted({n for n, _ in listed if n in self.cfg.room_keys() and sum(1 for m, _ in listed if m == n) > 1})
+        if doubled:  # never guess which copy is the real border
+            ids = "; ".join(f"{n}: " + ", ".join(i for m, i in listed if m == n) for n in doubled)
+            raise SystemExit(f"more than one room is named {', '.join(doubled)} ({ids}). Archive the extra copies "
+                             f"and run again; the clerk will not guess which one is the real desk.")
         missing = [name for name in self.cfg.room_keys() if name not in rooms]
         if missing:
             raise SystemExit(f"the clerk is not a member of: {', '.join(missing)}. Add `{self.cfg.clerk_name}` to "
