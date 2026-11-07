@@ -1,0 +1,91 @@
+# Customs desk: rooms only, for agents you have already created.
+#
+# Use this when Switch Console's template form can't create managed agents on your machine (seen on Windows
+# with Console v0.40.1). Create the two agents first in Your Agents -> New agent:
+#   in-investigator  instructions: switch/agents/in-investigator.md  working directory: ~/customs-regions/in
+#   eu-verifier      instructions: switch/agents/eu-verifier.md      working directory: ~/customs-regions/eu
+# and let anyone in their room direct them (the clerk must be able to hand them work).
+# switch/customs.template.yaml is the all-in-one version that also creates the agents.
+#
+# Each regional agent is a member of ONE room. Switch refuses them anything said or shared in the other
+# (read_context checks membership). The clerk is the only member of every room, and it is not an AI.
+# After running: add the Berlin lead to customs-intake and customs-eu in your chat app (on the bundled
+# Mattermost: `mmctl --local channel users add switch:customs-eu berlin-lead`).
+version: 1
+
+params:
+  clerk:
+    type: agent
+    description: The Customs clerk you registered with `python -m customs register`
+    default: customs-clerk
+  investigator:
+    type: agent
+    description: The Bengaluru agent you created (works from pseudonymised case files)
+    default: in-investigator
+  verifier:
+    type: agent
+    description: The Berlin agent you created (works next to the customer vault)
+    default: eu-verifier
+  bridge:
+    type: bridge
+    description: Where the rooms are mirrored
+    default: [$first]
+
+group:
+  name: Customs desk
+  description: Follow-the-sun engineering across Bengaluru and Berlin. Work crosses borders; customer data doesn't.
+
+rooms:
+  - name: customs-intake
+    description: Tickets are opened here; the custody trail is posted here. No customer data in this room.
+    bridge: "{bridge}"
+    agents: ["{clerk}"]
+    users: ["{$creator}"]
+    instructions: |
+      Open a ticket with `@customs-clerk open <customer_id> <what is wrong>`. Never paste customer messages,
+      names or contact details here: the clerk builds a pseudonymised case file from the EU vault itself.
+    kickoff: |
+      @{clerk} help
+  - name: customs-in
+    description: Bengaluru engineering. Pseudonymised case files only.
+    bridge: "{bridge}"
+    agents: ["{clerk}", "{investigator}"]
+    users: ["{$creator}"]
+    instructions: |
+      Bengaluru room. Customer data never enters it. The investigator holds custody of tickets assigned to
+      Bengaluru and hands them on with a customs-handoff block. The Bengaluru lead signs what leaves this
+      room with `approve H-n` or `reject H-n <reason>`.
+    roles:
+      - name: investigator
+        exclusive: true
+        instructions: |
+          You hold Bengaluru's custody. The clerk accepts handoffs out of this room only from you.
+    kickoff: |
+      @{investigator} assume the `investigator` role, then say in one line what you can and cannot access.
+  - name: customs-eu
+    description: Berlin verification inside the EU boundary. The only room that may see EU customer data.
+    bridge: "{bridge}"
+    agents: ["{clerk}", "{verifier}"]
+    users: ["{$creator}"]
+    instructions: |
+      Berlin room, inside the EU boundary. The verifier reconciles fixes against the customer's real records
+      and hands work back or requests a release with a customs-handoff block. The Berlin lead signs what
+      leaves this room and every release.
+    roles:
+      - name: verifier
+        exclusive: true
+        instructions: |
+          You hold Berlin's custody. The clerk accepts handoffs and release requests out of this room only from you.
+    kickoff: |
+      @{verifier} assume the `verifier` role, then say in one line what you can and cannot access.
+
+links:
+  - from: customs-intake
+    to: customs-in
+    label: investigates
+  - from: customs-in
+    to: customs-eu
+    label: verified in Berlin (via the clerk)
+  - from: customs-eu
+    to: customs-in
+    label: sent back to Bengaluru (via the clerk)
