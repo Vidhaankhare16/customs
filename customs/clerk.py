@@ -72,7 +72,7 @@ class Clerk:
 
     # ----------------------------------------------------------------------------------------- setup
     def resolve_rooms(self) -> None:
-        rooms = {r["name"]: r["id"] for r in self.client.list_rooms()}
+        rooms = {r["name"]: r.get("room_id") or r.get("id") for r in self.client.list_rooms()}
         missing = [name for name in self.cfg.room_keys() if name not in rooms]
         if missing:
             raise SystemExit(f"the clerk is not a member of: {', '.join(missing)}. Add `{self.cfg.clerk_name}` to "

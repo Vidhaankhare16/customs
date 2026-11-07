@@ -29,7 +29,7 @@ class FakeSwitch:
                                              "sender_name": sender, "body": body, "timestamp": int(time.time() * 1000)})
 
     def list_rooms(self):
-        return [{"name": n, "id": i} for n, i in self.ids.items()]
+        return [{"name": n, "room_id": i} for n, i in self.ids.items()]
 
     def room_detail(self, room_id):
         return {"agent_names": self.agents[room_id], "roles": self.roles[room_id]}

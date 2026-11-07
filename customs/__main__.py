@@ -57,7 +57,7 @@ def cmd_register(args, cfg) -> int:
 def cmd_check(args, cfg) -> int:
     client = SwitchClient(_load_creds(cfg))
     try:
-        rooms = {r["name"]: r["id"] for r in client.list_rooms()}
+        rooms = {r["name"]: r.get("room_id") or r.get("id") for r in client.list_rooms()}
     except SwitchError as exc:
         print(f"cannot list rooms: {exc}")
         return 1
