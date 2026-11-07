@@ -28,6 +28,10 @@ IN_NOTES = """# Bengaluru workspace (Customs demo)
 You are the Bengaluru engineering agent for Ledgerly. `ledgerly/` is your clone of the shared repository
 (remote `origin`). Customer records are EU-resident: they are not in this workspace, and you must not try to
 reach them. You work from the pseudonymised case files the Customs clerk posts in your Switch room.
+
+Scope: fix what the case file demonstrates, with a failing test first, and nothing speculative. Don't refactor or
+"harden" code the case file doesn't touch. Berlin reconciles every fix against the full real data and hands back
+anything else it finds; that loop is how this desk works.
 """
 
 EU_NOTES = """# Berlin workspace (Customs demo)
