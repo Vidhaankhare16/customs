@@ -11,6 +11,8 @@
 # ships. Room roles are exclusive, so exactly one agent holds custody in each region at a time.
 #
 # Before running: `python scripts/setup_regions.py` (workspaces) and `python -m customs register` (clerk).
+# After running: add the Berlin lead to customs-intake and customs-eu in your chat app (on the bundled
+# Mattermost: `mmctl --local channel users add switch:customs-eu berlin-lead`).
 version: 1
 
 params:
@@ -18,9 +20,6 @@ params:
     type: agent
     description: The Customs clerk you registered with `python -m customs register`
     default: customs-clerk
-  berlin_lead:
-    type: user
-    description: The person who signs work out of Berlin and approves releases (must match config/customs.toml)
   provider_in:
     type: provider
     description: Coding agent for the Bengaluru investigator
@@ -126,7 +125,7 @@ rooms:
     description: Tickets are opened here; the custody trail is posted here. No customer data in this room.
     bridge: "{bridge}"
     agents: ["{clerk}"]
-    users: ["{$creator}", "{berlin_lead}"]
+    users: ["{$creator}"]
     instructions: |
       Open a ticket with `@customs-clerk open <customer_id> <what is wrong>`. Never paste customer messages,
       names or contact details here: the clerk builds a pseudonymised case file from the EU vault itself.
@@ -152,7 +151,7 @@ rooms:
     description: Berlin verification inside the EU boundary. The only room that may see EU customer data.
     bridge: "{bridge}"
     agents: ["{clerk}", eu-verifier]
-    users: ["{berlin_lead}", "{$creator}"]
+    users: ["{$creator}"]
     instructions: |
       Berlin room, inside the EU boundary. The verifier reconciles fixes against the customer's real records
       and hands work back or requests a release with a customs-handoff block. The Berlin lead signs what
