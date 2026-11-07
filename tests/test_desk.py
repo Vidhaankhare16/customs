@@ -176,3 +176,10 @@ def test_status_and_help(desk):
     assert "TKT-0001" in status and "custody **Berlin**" in status
     assert "standing-order" in text(desk.handle(msg(INTAKE, "anyone", "@customs-clerk hello"), INTAKE_VIEW))
     assert desk.handle(msg(INTAKE, "anyone", "unrelated chatter"), INTAKE_VIEW) == []
+
+
+def test_plain_clerk_prefix_works_without_a_mention(desk):
+    posts = desk.handle(msg(INTAKE, "support-lead", "clerk open C-DE-0042 totals off by a cent"), INTAKE_VIEW)
+    assert rooms(posts) == [IN, INTAKE]
+    assert desk.handle(msg(INTAKE, "support-lead", "clerkship is a word, not a command"), INTAKE_VIEW) == []
+    assert "TKT-0001" in text(desk.handle(msg(INTAKE, "anyone", "Clerk: status"), INTAKE_VIEW))

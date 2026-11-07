@@ -126,7 +126,7 @@ rooms:
     agents: ["{clerk}"]
     users: ["{$creator}"]
     instructions: |
-      Open a ticket with `@customs-clerk open <customer_id> <what is wrong>`. Never paste customer messages,
+      Open a ticket with `clerk open <customer_id> <what is wrong>`. Never paste customer messages,
       names or contact details here: the clerk builds a pseudonymised case file from the EU vault itself.
     kickoff: |
       @{clerk} help

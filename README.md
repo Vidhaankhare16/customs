@@ -101,7 +101,7 @@ Everything below is enforced in code or by the Switch server, never by asking a 
    the requested commit against the vault itself, in a fresh export. Then it fast-forwards `main` to exactly
    that commit, or refuses if `main` moved.
 8. **Ledger.** Every decision, every refusal and every use of delegated authority is hash-chained.
-   `@customs-clerk verify-ledger` names the first tampered entry.
+   `clerk verify-ledger` names the first tampered entry.
 
 The clerk is also durable. Decisions are saved before they're announced, through an outbox, so a crash never
 duplicates a handoff or loses a signature request.
@@ -131,12 +131,12 @@ python -m customs run                      # the clerk
 
 | Command | Where | What |
 |---|---|---|
-| `@customs-clerk open C-DE-0042 <problem>` | intake | open a ticket |
+| `clerk open C-DE-0042 <problem>` | intake | open a ticket |
 | `approve H-3` / `reject H-3 <reason>` | the region the work leaves | sign a crossing |
-| `@customs-clerk standing-order release TKT-0001 until 09:00` | your region's room | delegate one signature while you're away |
-| `@customs-clerk revoke SO-2`, `@customs-clerk orders` | anywhere | manage standing orders |
-| `@customs-clerk status`, `ledger TKT-0001`, `verify-ledger` | anywhere | see state and proof |
-| `@customs-clerk time eu 18:05` | anywhere | **demo only**: move the desk clock (ledgered) |
+| `clerk standing-order release TKT-0001 until 09:00` | your region's room | delegate one signature while you're away |
+| `clerk revoke SO-2`, `clerk orders` | anywhere | manage standing orders |
+| `clerk status`, `ledger TKT-0001`, `verify-ledger` | anywhere | see state and proof |
+| `clerk time eu 18:05` | anywhere | **demo only**: move the desk clock (ledgered) |
 
 ### Tests
 

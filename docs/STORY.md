@@ -88,7 +88,7 @@ Berlin 18:05. The clerk posts **"Berlin is closing"**: TKT-0001 may need a relea
 logging off, the Berlin lead types:
 
 ```
-@customs-clerk standing-order release TKT-0001 until 09:00
+clerk standing-order release TKT-0001 until 09:00
 ```
 
 The clerk restates exactly what it may do: sign that release **only if its own independent reconciliation of
@@ -120,7 +120,7 @@ would have been refused and waited for a person.
 Berlin 09:01: **"Good morning, Berlin. While you were away: H-4 was signed under your standing order SO-2;
 TKT-0001 was released."** The **custody card** in intake lists every crossing, who signed (in person or by
 standing order), text digests, refusals along the way, and "personal data that left the EU: none".
-`@customs-clerk verify-ledger` says intact. Edit one line of the ledger file and run it again: broken, at
+`clerk verify-ledger` says intact. Edit one line of the ledger file and run it again: broken, at
 that entry.
 
 **Demo beat (30 s).** Morning briefing, custody card, tamper check.

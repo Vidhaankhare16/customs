@@ -294,7 +294,7 @@ class Desk:
         if open_tickets and not active:
             example = f"standing-order {'release' if region.key == self.cfg.release_region else 'handoff'} {open_tickets[0].id} until {region.office_hours[0]:02d}:00"
             lines.append(f"Agents keep working overnight. If something will need your signature before you're back, "
-                         f"you can leave a bounded standing order, e.g. `@{self.cfg.clerk_name} {example}`.")
+                         f"you can leave a bounded standing order, e.g. `clerk {example}`.")
         return [Post(region.room, "\n".join(lines))]
 
     def _morning_briefing(self, region: Region) -> list[Post]:
@@ -568,7 +568,7 @@ class Desk:
     # ------------------------------------------------------------------------------- standing orders
     def _standing_order(self, msg: Incoming, view: RoomView, args: str) -> list[Post]:
         region = self.cfg.region_for_room(msg.room)
-        usage = f"Usage, in your region's room: `@{self.cfg.clerk_name} standing-order <release|handoff> <TKT-0001|any> until <HH:MM>`"
+        usage = f"Usage, in your region's room: `clerk standing-order <release|handoff> <TKT-0001|any> until <HH:MM>`"
         if region is None:
             return [Post(msg.room, usage)]
         if not self._is_person(msg, view) or not self._is_approver(msg.sender_name, region):
@@ -604,7 +604,7 @@ class Desk:
         return [Post(msg.room,
             f"**{oid}** recorded. While you're away I will sign {order.scope()} on your behalf **only if** "
             f"{order.condition()}: once, until {expiry:%H:%M} {region.label} time. Anything else waits for you. "
-            f"It goes in the ledger as your signature under {oid}. Revoke any time with `@{self.cfg.clerk_name} revoke {oid}`.")]
+            f"It goes in the ledger as your signature under {oid}. Revoke any time with `clerk revoke {oid}`.")]
 
     def _revoke(self, msg: Incoming, view: RoomView, oid: str) -> list[Post]:
         order = self.state.orders.get(oid)
@@ -694,10 +694,10 @@ class Desk:
         return f"**Ledger BROKEN** at entry {check.broken_at}: {check.reason}."
 
     def _help(self) -> str:
-        c = self.cfg.clerk_name
-        return (f"I'm the Customs clerk for `{self.cfg.desk_name}`. People: `@{c} open <customer_id> <problem>` (intake), "
-                f"`approve H-n` / `reject H-n <reason>`, `@{c} standing-order <release|handoff> <TKT-0001|any> until <HH:MM>`, "
-                f"`@{c} revoke SO-n`, `@{c} orders`, `@{c} status`, `@{c} ledger [TKT-0001]`, `@{c} verify-ledger`. "
+        c = "clerk"  # the plain word avoids the platform's @-mention handling
+        return (f"I'm the Customs clerk for `{self.cfg.desk_name}`. People: `{c} open <customer_id> <problem>` (intake), "
+                f"`approve H-n` / `reject H-n <reason>`, `{c} standing-order <release|handoff> <TKT-0001|any> until <HH:MM>`, "
+                f"`{c} revoke SO-n`, `{c} orders`, `{c} status`, `{c} ledger [TKT-0001]`, `{c} verify-ledger`. "
                 f"Agents hand work on with a ```customs-handoff block.")
 
     # ---------------------------------------------------------------------------------------- helpers
@@ -727,7 +727,10 @@ class Desk:
         return f"{region.label}: {region.local_time(now):%H:%M} ({state})"
 
     def _mentions_clerk(self, body: str) -> bool:
-        return f"@{self.cfg.clerk_name}".lower() in body.lower()
+        """`@customs-clerk ...` or a message starting with the word `clerk`. The plain word avoids the chat
+        platform's addressing machinery entirely (no mention, nothing for Switch to auto-answer)."""
+        return f"@{self.cfg.clerk_name}".lower() in body.lower() or re.match(r"^\s*clerk\b", body, re.IGNORECASE) is not None
 
     def _strip_mention(self, body: str) -> str:
-        return re.sub(rf"@{re.escape(self.cfg.clerk_name)}\b[:,]?\s*", "", body, flags=re.IGNORECASE).strip()
+        body = re.sub(rf"@{re.escape(self.cfg.clerk_name)}\b[:,]?\s*", "", body, flags=re.IGNORECASE)
+        return re.sub(r"^\s*clerk\b[:,]?\s*", "", body, flags=re.IGNORECASE).strip()
