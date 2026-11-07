@@ -28,11 +28,10 @@ params:
     type: provider
     description: Coding agent for the Berlin verifier (a different vendor shows the desk is vendor-neutral)
     default: [codex, opencode, antigravity, cursor, claude]
-  location:
-    type: location
-    description: The machine the agents run on
-    default: local
-    input: advanced
+  machine:
+    type: machine
+    description: The machine the agents run on as managed agents (yours)
+    default: [$first]
   dir_in:
     type: directory
     description: Bengaluru workspace (created by scripts/setup_regions.py)
@@ -53,7 +52,7 @@ agents:
     description: Bengaluru engineering. Fixes Ledgerly from pseudonymised case files; never sees customer data.
     addressing: anyone   # it is a member of customs-in only, so "anyone" means the Bengaluru room
     provider: "{provider_in}"
-    location: "{location}"
+    machine: "{machine}"
     directory: "{dir_in}"
     instructions: |
       You are the Bengaluru engineering agent on the Customs desk for Ledgerly, an invoicing library.
@@ -87,7 +86,7 @@ agents:
     description: Berlin verification. Reconciles fixes against the customer's real records inside the EU.
     addressing: anyone   # it is a member of customs-eu only, so "anyone" means the Berlin room
     provider: "{provider_eu}"
-    location: "{location}"
+    machine: "{machine}"
     directory: "{dir_eu}"
     instructions: |
       You are the Berlin verification agent on the Customs desk for Ledgerly, an invoicing library. You work
