@@ -30,6 +30,12 @@ residency = ["EU"]
 utc_offset = "+01:00"
 office_hours = [9, 18]
 
+[people]
+# How people are named in the clerk's messages (chat username = display name). Signatures are still checked
+# against the usernames in each region's `approvers`, and the ledger records usernames.
+user = "Bengaluru Lead"
+"berlin-lead" = "Berlin Lead"
+
 [routes]
 allowed = [["in", "eu"], ["eu", "in"]]
 

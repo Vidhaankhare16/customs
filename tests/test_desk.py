@@ -183,3 +183,10 @@ def test_plain_clerk_prefix_works_without_a_mention(desk):
     assert rooms(posts) == [IN, INTAKE]
     assert desk.handle(msg(INTAKE, "support-lead", "clerkship is a word, not a command"), INTAKE_VIEW) == []
     assert "TKT-0001" in text(desk.handle(msg(INTAKE, "anyone", "Clerk: status"), INTAKE_VIEW))
+
+
+def test_people_are_named_by_display_name_but_ledgered_by_identity(desk):
+    desk.cfg.people.update({"bengaluru-lead": "Bengaluru Lead"})
+    posts = to_eu(desk)
+    assert "signed out of Bengaluru by Bengaluru Lead" in posts[0].text
+    assert desk.ledger.entries()[3]["actor"] == "bengaluru-lead"

@@ -345,7 +345,7 @@ class Desk:
             return [Post(msg.room, "Usage: `time eu 18:05`, `time +8h`, `time reset` (demo only).")]
         self.log("clock_moved", None, msg.sender_name, offset_seconds=self.state.clock_offset)
         clocks = " | ".join(self._clock_line(r) for r in self.cfg.regions.values())
-        return [Post(msg.room, f"Desk clock moved by {msg.sender_name} (demo). {clocks}")] + self.tick()
+        return [Post(msg.room, f"Desk clock moved by {self._who(msg.sender_name)} (demo). {clocks}")] + self.tick()
 
     # ------------------------------------------------------------------------------------------ open
     def _open(self, msg: Incoming, args: str) -> list[Post]:
@@ -482,7 +482,7 @@ class Desk:
                      order=order.id, handoff=pid, digest=pending.digest, on_behalf_of=order.created_by)
             note = Post(msg.room,
                 f"**{pid}** passed the border check.{verified}\n\n{signer_region.label} is off duty "
-                f"({self._clock_line(signer_region)}), but **{order.created_by}** left standing order **{order.id}** "
+                f"({self._clock_line(signer_region)}), but **{self._who(order.created_by)}** left standing order **{order.id}** "
                 f"for {order.scope()} if {order.condition()}. It does, so I'm signing on their behalf (digest "
                 f"`{pending.digest}`). They'll see it in their morning briefing.")
             return [note] + self._approve(pending, f"{order.created_by} (standing order {order.id})")
@@ -544,9 +544,9 @@ class Desk:
         self.log("custody_transferred", ticket.id, self.cfg.clerk_name, dest.key, to=dest.key, handoff=pending.id)
         return [
             Post(dest.room, f"@{dest.role} **{ticket.id}** is now in your custody, signed out of {source.label} "
-                            f"by {signer}.\n\n{pending.outbound}"),
+                            f"by {self._who(signer)}.\n\n{pending.outbound}"),
             Post(signing_room, f"{pending.id} approved. {ticket.id} is now with {dest.label}. {self._clock_line(dest)}"),
-            Post(self.cfg.intake_room, f"**{ticket.id}**: {source.label} -> {dest.label}, signed by {signer}. "
+            Post(self.cfg.intake_room, f"**{ticket.id}**: {source.label} -> {dest.label}, signed by {self._who(signer)}. "
                                        f"{self._clock_line(dest)}"),
         ]
 
@@ -639,7 +639,7 @@ class Desk:
         rows = ["| # | From | To | Signed by | Text digest |", "|---|---|---|---|---|"]
         for i, h in enumerate(ticket.history, start=1):
             to = "release" if h["to"] == "release" else self.cfg.regions[h["to"]].label
-            rows.append(f"| {i} | {self.cfg.regions[h['from']].label} | {to} | {h['signed_by']} | `{h['digest']}` |")
+            rows.append(f"| {i} | {self.cfg.regions[h['from']].label} | {to} | {self._who(h['signed_by'])} | `{h['digest']}` |")
         check = self.ledger.verify()
         _, head = self.ledger.head()
         entries = self.ledger.for_ticket(ticket.id)
@@ -668,7 +668,7 @@ class Desk:
         active = [o for o in self.state.orders.values() if o.status == "active"]
         if active:
             lines.append("")
-            lines.append("Standing orders: " + "; ".join(f"{o.id} by {o.created_by}: {o.scope()}" for o in active))
+            lines.append("Standing orders: " + "; ".join(f"{o.id} by {self._who(o.created_by)}: {o.scope()}" for o in active))
         return "\n".join(lines)
 
     def _orders_view(self) -> str:
@@ -676,7 +676,7 @@ class Desk:
             return "No standing orders."
         rows = ["| Order | By | Covers | Until (UTC) | Status |", "|---|---|---|---|---|"]
         for o in self.state.orders.values():
-            rows.append(f"| {o.id} | {o.created_by} | {o.scope()} | {o.expires_at[11:16]} | {o.status} |")
+            rows.append(f"| {o.id} | {self._who(o.created_by)} | {o.scope()} | {o.expires_at[11:16]} | {o.status} |")
         return "\n".join(rows)
 
     def _ledger_view(self, ticket: str) -> str:
@@ -706,6 +706,12 @@ class Desk:
     def _signer(self, pending: Pending) -> Region:
         """Whose signature a crossing needs: the region it leaves, or for a release the release region."""
         return self.cfg.regions[self.cfg.release_region if pending.to == "release" else pending.source]
+
+    def _who(self, signer: str) -> str:
+        """How a person is named in messages ('user (standing order SO-1)' -> 'Bengaluru Lead (standing order SO-1)').
+        The ledger keeps the raw chat identity."""
+        name, sep, rest = signer.partition(" (")
+        return self.cfg.people.get(name, name) + sep + rest
 
     def _is_person(self, msg: Incoming, view: RoomView) -> bool:
         return msg.sender_kind == "user" and msg.sender_name not in view.agent_names

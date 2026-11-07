@@ -66,6 +66,7 @@ class Config:
     verify_command: tuple[str, ...] = ()
     time_travel: bool = False  # demo only: people may move the desk clock (every move is ledgered)
     max_standing_order_hours: int = 24
+    people: dict = field(default_factory=dict)  # chat username -> name shown in the clerk's messages
     extra: dict = field(default_factory=dict)
 
     def region_for_room(self, room: str) -> Region | None:
@@ -124,6 +125,7 @@ def load(path: str | Path) -> Config:
             verify_command=tuple(raw.get("release", {}).get("verify_command", [])),
             time_travel=bool(raw.get("demo", {}).get("time_travel", False)),
             max_standing_order_hours=int(raw.get("authority", {}).get("max_standing_order_hours", 24)),
+            people={str(k): str(v) for k, v in raw.get("people", {}).items()},
             extra=raw,
         )
     except KeyError as exc:
