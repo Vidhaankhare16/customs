@@ -37,7 +37,7 @@ PARTIAL_FIX = [
 FULL_FIX = [
     ("ledgerly/importer.py", 'return float(text.strip().replace(",", "."))',
      'from decimal import Decimal\n\n    return Decimal(text.strip().replace(".", "").replace(",", "."))'),
-    ("ledgerly/importer.py", "except ValueError:\n                continue  # TODO: malformed rows from old exports",
+    ("ledgerly/importer.py", "except ValueError:\n                continue  # some ERP exports interleave subtotal rows; they carry no amount",
      "except ValueError:\n                raise"),
 ]
 

@@ -400,7 +400,9 @@ class Desk:
             )
         parsed, errors = handoff_mod.parse(msg.body)
         if errors:
-            return self._refuse(msg, source, None, "handoff_refused", "the handoff is not valid:\n- " + "\n- ".join(errors))
+            seen = re.search(r"TKT-\d{4}", handoff_mod.extract(msg.body) or "")  # count it on the ticket's card
+            return self._refuse(msg, source, seen.group(0) if seen else None, "handoff_refused",
+                                "the handoff is not valid:\n- " + "\n- ".join(errors))
         ticket = self.state.tickets.get(parsed.ticket)
         if ticket is None or ticket.status != "open":
             return self._refuse(msg, source, parsed.ticket, "handoff_refused", f"{parsed.ticket} is not an open ticket.")

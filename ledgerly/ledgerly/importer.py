@@ -33,6 +33,6 @@ def import_csv(path: str | Path) -> list[Invoice]:
                     vat_rate=parse_amount(row["vat_rate"]) / 100,
                 )
             except ValueError:
-                continue  # TODO: malformed rows from old exports
+                continue  # some ERP exports interleave subtotal rows; they carry no amount
             invoice.lines.append(line)
     return list(invoices.values())
