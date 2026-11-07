@@ -128,6 +128,11 @@ class State:
         )
 
 
+def _person(name: str) -> str:
+    """Chat platforms spell the same person '@Berlin-Lead' or 'berlin-lead'; compare them as one."""
+    return name.strip().lstrip("@").casefold()
+
+
 def digest(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()[:12]
 
@@ -323,7 +328,7 @@ class Desk:
         if msg.sender_kind != "user" or msg.sender_name in view.agent_names:
             self.ledger.append("approval_refused", ticket.id, msg.sender_name, source.key, handoff=pid, reason="sender is not a person")
             return [Post(msg.room, f"**Refused:** {pid} must be signed by a person, and `{msg.sender_name}` is not one. Logged.")]
-        if msg.sender_name not in signing_region.approvers:
+        if _person(msg.sender_name) not in {_person(a) for a in signing_region.approvers}:
             self.ledger.append("approval_refused", ticket.id, msg.sender_name, source.key, handoff=pid, reason="not an approver")
             return [Post(msg.room, f"**Refused:** `{msg.sender_name}` is not an approver for {signing_region.label} "
                                    f"(approvers: {', '.join(signing_region.approvers)}). Logged.")]
