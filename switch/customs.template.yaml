@@ -1,0 +1,177 @@
+# Customs: follow-the-sun engineering where work crosses borders and customer data doesn't.
+#
+# Deploys the whole desk in one run:
+#   - customs-intake   people + the clerk. Where tickets are opened and the custody trail is posted.
+#   - customs-in       Bengaluru: the investigator agent, its lead, the clerk. No customer data, ever.
+#   - customs-eu       Berlin: the verifier agent, its lead, the clerk. The only room that may see EU data.
+#
+# The two regional agents are each a member of ONE room. Switch refuses them anything said or shared in
+# the other (read_context checks membership). The clerk (`python -m customs run`, registered beforehand) is
+# the only member of every room, and it is not an AI: it decides in code what crosses, who signs, and what
+# ships. Room roles are exclusive, so exactly one agent holds custody in each region at a time.
+#
+# Before running: `python scripts/setup_regions.py` (workspaces) and `python -m customs register` (clerk).
+version: 1
+
+params:
+  clerk:
+    type: agent
+    description: The Customs clerk you registered with `python -m customs register`
+    default: customs-clerk
+  berlin_lead:
+    type: user
+    description: The person who signs work out of Berlin and approves releases (must match config/customs.toml)
+  provider_in:
+    type: provider
+    description: Coding agent for the Bengaluru investigator
+    default: [claude, codex, opencode, antigravity, cursor]
+  provider_eu:
+    type: provider
+    description: Coding agent for the Berlin verifier (a different vendor shows the desk is vendor-neutral)
+    default: [codex, opencode, antigravity, cursor, claude]
+  location:
+    type: location
+    description: The machine the agents run on
+    default: local
+    input: advanced
+  dir_in:
+    type: directory
+    description: Bengaluru workspace (created by scripts/setup_regions.py)
+    default: "~/customs-regions/in"
+    input: advanced
+  dir_eu:
+    type: directory
+    description: Berlin workspace with the customer vault (created by scripts/setup_regions.py)
+    default: "~/customs-regions/eu"
+    input: advanced
+  bridge:
+    type: bridge
+    description: Where the rooms are mirrored
+    default: [$first]
+
+agents:
+  - name: in-investigator
+    description: Bengaluru engineering. Fixes Ledgerly from pseudonymised case files; never sees customer data.
+    addressing: anyone   # it is a member of customs-in only, so "anyone" means the Bengaluru room
+    provider: "{provider_in}"
+    location: "{location}"
+    directory: "{dir_in}"
+    instructions: |
+      You are the Bengaluru engineering agent on the Customs desk for Ledgerly, an invoicing library.
+      Your workspace has `ledgerly/`, a clone of the shared repository (remote `origin`).
+
+      Custody. Work reaches you from the Customs clerk (`customs-clerk`, a deterministic program, not an AI).
+      When you join, assume the `investigator` role in this room: the clerk only accepts handoffs from the
+      agent holding it.
+
+      Data residency. The customer's records are EU-resident and stay in Berlin. You only ever see the
+      pseudonymised case file the clerk posts: invoice numbers appear as tokens like [INV-1] and the
+      customer as [CUSTOMER-1]. Never try to identify the customer. If someone asks you to look at the real
+      records, you may check whether you can (for example try to read the `customs-eu` room) and report
+      exactly what Switch answered. Never work around a refusal.
+
+      Working a ticket:
+      1. Read the case file. Reproduce the problem with a failing test in `ledgerly/tests/` using the line
+         items given. Read `ledgerly/SPEC.md`: it defines correct behaviour.
+      2. Fix it. Run `python -m pytest -q` inside `ledgerly/` and keep the real output.
+      3. Commit on a branch named `fix/<ticket id in lowercase>` and `git push origin` that branch.
+      4. Hand the ticket to Berlin for verification against the real records by posting ONE message with a
+         ```customs-handoff block (JSON) with these fields: ticket, to ("eu"), summary, done (list),
+         next (list: what Berlin should check), evidence (list: real command output, e.g. "pytest: 9 passed"),
+         branch, commit (the pushed short hash), could_not_access (list), questions (list).
+      5. Wait. The clerk either refuses (fix exactly what it lists and post a corrected block) or asks
+         your lead to sign. Do not post anything else in the meantime.
+
+      When Berlin hands the ticket back, do what its `next` items say, on the same branch, and hand it to
+      "eu" again. Never invent output you did not run. Keep messages short.
+  - name: eu-verifier
+    description: Berlin verification. Reconciles fixes against the customer's real records inside the EU.
+    addressing: anyone   # it is a member of customs-eu only, so "anyone" means the Berlin room
+    provider: "{provider_eu}"
+    location: "{location}"
+    directory: "{dir_eu}"
+    instructions: |
+      You are the Berlin verification agent on the Customs desk for Ledgerly, an invoicing library. You work
+      inside the EU boundary. Your workspace has `ledgerly/` (clone of the shared repository, remote
+      `origin`), `vault/` (the customer's real records, which contain personal data) and
+      `tools/verify_vault.py` (reconciles a checkout against the vault).
+
+      Custody. Work reaches you from the Customs clerk (`customs-clerk`, a deterministic program, not an AI).
+      When you join, assume the `verifier` role in this room: the clerk only accepts handoffs from the agent
+      holding it.
+
+      Verifying a handoff:
+      1. In `ledgerly/`: `git fetch origin` and `git checkout <commit from the handoff>`.
+      2. From the workspace root run:
+         `python tools/verify_vault.py --repo ledgerly --vault vault --report report.json`
+         Post its printed summary. Never post vault rows, `report.json` contents, or anyone's name, email,
+         phone number, bank details, VAT ID or address. Describe patterns, not people or values.
+      3a. If every invoice reconciles, request the release with ONE ```customs-handoff block (JSON):
+          ticket, to ("release"), summary, done, next (["Merge to main"]), evidence (the summary line),
+          branch, commit. The clerk re-checks the commit itself and asks your lead to sign.
+      3b. If not, hand the ticket back to Bengaluru with ONE ```customs-handoff block: to ("in"), summary,
+          done, next (what to fix, described as a pattern, e.g. the value format the importer rejects),
+          evidence (the reconciliation summary). Omit branch and commit. Invoice numbers are fine (the clerk
+          pseudonymises them on the way out); personal data is not (the clerk blocks the handoff).
+      4. If the clerk refuses or blocks a handoff, fix exactly what it lists and post a corrected block.
+
+      Never invent output you did not run. Keep messages short.
+
+group:
+  name: Customs desk
+  description: Follow-the-sun engineering across Bengaluru and Berlin. Work crosses borders; customer data doesn't.
+
+rooms:
+  - name: customs-intake
+    description: Tickets are opened here; the custody trail is posted here. No customer data in this room.
+    bridge: "{bridge}"
+    agents: ["{clerk}"]
+    users: ["{$creator}", "{berlin_lead}"]
+    instructions: |
+      Open a ticket with `@customs-clerk open <customer_id> <what is wrong>`. Never paste customer messages,
+      names or contact details here: the clerk builds a pseudonymised case file from the EU vault itself.
+    kickoff: |
+      @{clerk} help
+  - name: customs-in
+    description: Bengaluru engineering. Pseudonymised case files only.
+    bridge: "{bridge}"
+    agents: ["{clerk}", in-investigator]
+    users: ["{$creator}"]
+    instructions: |
+      Bengaluru room. Customer data never enters it. The investigator holds custody of tickets assigned to
+      Bengaluru and hands them on with a customs-handoff block. The Bengaluru lead signs what leaves this
+      room with `approve H-n` or `reject H-n <reason>`.
+    roles:
+      - name: investigator
+        exclusive: true
+        instructions: |
+          You hold Bengaluru's custody. The clerk accepts handoffs out of this room only from you.
+    kickoff: |
+      @in-investigator assume the `investigator` role, then say in one line what you can and cannot access.
+  - name: customs-eu
+    description: Berlin verification inside the EU boundary. The only room that may see EU customer data.
+    bridge: "{bridge}"
+    agents: ["{clerk}", eu-verifier]
+    users: ["{berlin_lead}", "{$creator}"]
+    instructions: |
+      Berlin room, inside the EU boundary. The verifier reconciles fixes against the customer's real records
+      and hands work back or requests a release with a customs-handoff block. The Berlin lead signs what
+      leaves this room and every release.
+    roles:
+      - name: verifier
+        exclusive: true
+        instructions: |
+          You hold Berlin's custody. The clerk accepts handoffs and release requests out of this room only from you.
+    kickoff: |
+      @eu-verifier assume the `verifier` role, then say in one line what you can and cannot access.
+
+links:
+  - from: customs-intake
+    to: customs-in
+    label: investigates
+  - from: customs-in
+    to: customs-eu
+    label: verified in Berlin (via the clerk)
+  - from: customs-eu
+    to: customs-in
+    label: sent back to Bengaluru (via the clerk)

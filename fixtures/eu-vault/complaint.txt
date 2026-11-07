@@ -1,0 +1,18 @@
+From: Jana Wolff <jana.wolff@brauhaus-lindenhof.de>
+To: support@ledgerly.example
+Subject: Rechnungsbeträge stimmen nicht / invoice totals don't match
+
+Hello Ledgerly team,
+
+during our month-end reconciliation several of your invoice totals are off by a cent compared to our
+accounting system. Examples:
+  - BL-2026-0101: Ledgerly 312,58 EUR, our books 312,59 EUR
+  - BL-2026-0104: Ledgerly 378,93 EUR, our books 378,96 EUR
+  - BL-2026-0108: Ledgerly 147,25 EUR, our books 147,26 EUR
+
+Our auditor needs this resolved before the quarterly VAT return. Please call me on +49 30 5557 0142 if
+you need anything. Our VAT ID is DE298765431.
+
+Best regards
+Jana Wolff
+Brauhaus Lindenhof GmbH, Lindenstraße 17, 10969 Berlin

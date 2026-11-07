@@ -1,0 +1,21 @@
+{
+  "customer_id": "C-DE-0042",
+  "legal_name": "Brauhaus Lindenhof GmbH",
+  "residency": "EU",
+  "contacts": [
+    {
+      "name": "Jana Wolff",
+      "email": "jana.wolff@brauhaus-lindenhof.de",
+      "phone": "+49 30 5557 0142"
+    },
+    {
+      "name": "Tobias Brenner",
+      "email": "t.brenner@brauhaus-lindenhof.de",
+      "phone": "+49 30 5557 0199"
+    }
+  ],
+  "vat_id": "DE298765431",
+  "iban": "DE44 5001 0517 5407 3249 31",
+  "street": "Lindenstraße 17",
+  "postcode_city": "10969 Berlin"
+}

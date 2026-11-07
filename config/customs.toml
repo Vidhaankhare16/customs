@@ -1,0 +1,43 @@
+# Customs desk configuration. Paths are relative to this file unless absolute; ~ is expanded.
+# `python scripts/setup_regions.py` creates the regional workspaces this file points at.
+
+[desk]
+name = "customs"
+intake_room = "customs-intake"
+start_region = "in"        # where new tickets start (engineering)
+release_region = "eu"      # who signs a release for EU-resident customers
+
+[clerk]
+agent_name = "customs-clerk"
+data_dir = "../.customs"   # ledger, state and credentials (git-ignored)
+poll_seconds = 2
+
+[regions.in]
+label = "Bengaluru"
+room = "customs-in"
+role = "investigator"
+approvers = ["bengaluru-lead"]   # chat usernames of the people who sign work out of this region
+residency = []                   # may hold no resident customer data
+utc_offset = "+05:30"
+office_hours = [9, 18]
+
+[regions.eu]
+label = "Berlin"
+room = "customs-eu"
+role = "verifier"
+approvers = ["berlin-lead"]
+residency = ["EU"]
+utc_offset = "+01:00"
+office_hours = [9, 18]
+
+[routes]
+allowed = [["in", "eu"], ["eu", "in"]]
+
+[vault]
+# The EU customer vault. Only the clerk (the border) and the EU workspace can read it.
+path = "~/customs-regions/eu/vault"
+
+[release]
+origin_repo = "~/customs-regions/origin/ledgerly.git"
+independent_verification = true
+verify_command = ["{python}", "tools/verify_vault.py", "--repo", "{checkout}", "--vault", "{vault}"]

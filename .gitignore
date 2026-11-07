@@ -1,0 +1,13 @@
+# clerk state: ledger, state, credentials (never commit credentials)
+.customs/
+*.tmp
+
+# python
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+
+# verification reports contain personal data
+report.json
